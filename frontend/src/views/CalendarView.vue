@@ -150,7 +150,9 @@
         role="dialog"
         aria-modal="true"
       >
-        <div class="relative w-full max-w-md rounded-3xl border border-emerald-300/30 bg-slate-900/90 p-6 text-emerald-50 shadow-[0_25px_45px_rgba(16,185,129,0.3)]">
+        <div
+          class="relative flex w-full max-w-md flex-col gap-4 overflow-hidden rounded-3xl border border-emerald-300/30 bg-slate-900/90 p-6 text-emerald-50 shadow-[0_25px_45px_rgba(16,185,129,0.3)] sm:p-8 max-h-[85vh]"
+        >
           <button
             type="button"
             class="absolute right-4 top-4 rounded-full border border-emerald-300/30 bg-slate-900/80 p-2 text-sm text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/20"
@@ -162,14 +164,17 @@
           <h3 class="font-heading text-2xl text-emerald-200">Schnurriger Terminplaner</h3>
           <p class="mt-1 text-sm text-emerald-100/70">{{ selectedDateLabel }}</p>
 
-          <section class="mt-5 space-y-3" aria-live="polite">
+          <section
+            class="mt-5 flex max-h-[40vh] flex-col gap-3 overflow-y-auto pr-1"
+            aria-live="polite"
+          >
             <div
               v-if="eventsForSelectedDate.length === 0"
               class="rounded-2xl border border-dashed border-emerald-300/30 bg-slate-900/70 px-4 py-3 text-sm text-emerald-100/80"
             >
               Noch keine Pfotenspuren an diesem Tag – füge deinen ersten Termin hinzu!
             </div>
-            <ul v-else class="space-y-3">
+            <ul v-else class="flex flex-col gap-3">
               <li
                 v-for="event in eventsForSelectedDate"
                 :key="event.id"
@@ -190,7 +195,7 @@
             </ul>
           </section>
 
-          <form class="mt-6 space-y-4" @submit.prevent="addEvent">
+          <form class="mt-2 space-y-4" @submit.prevent="addEvent">
             <label class="block text-sm font-semibold text-emerald-100">
               Titel deines Termins
               <input
@@ -224,7 +229,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 interface StoredEvent {
   id: number;
@@ -395,6 +400,36 @@ const isAddingEvent = computed(() => selectedDate.value !== null);
 const eventsForSelectedDate = computed(() => {
   if (!selectedDateIso.value) return [] as StoredEvent[];
   return eventsByDate.value.get(selectedDateIso.value) ?? [];
+});
+
+const originalBodyOverflow = ref<string | null>(null);
+
+const restoreBodyOverflow = () => {
+  if (typeof window === 'undefined') return;
+  if (originalBodyOverflow.value !== null) {
+    document.body.style.overflow = originalBodyOverflow.value;
+    originalBodyOverflow.value = null;
+  }
+};
+
+watch(isAddingEvent, (isOpen) => {
+  if (typeof window === 'undefined') return;
+
+  const body = document.body;
+  if (!body) return;
+
+  if (isOpen) {
+    if (originalBodyOverflow.value === null) {
+      originalBodyOverflow.value = body.style.overflow || '';
+    }
+    body.style.overflow = 'hidden';
+  } else {
+    restoreBodyOverflow();
+  }
+});
+
+onBeforeUnmount(() => {
+  restoreBodyOverflow();
 });
 
 const goToPreviousMonth = () => {
