@@ -8,9 +8,6 @@ const routes = [
   { path: '/schedule', name: 'schedule', component: () => import('@/views/ScheduleView.vue') },
   { path: '/shopping', name: 'shopping', component: () => import('@/views/ShoppingView.vue') },
   { path: '/cards', name: 'cards', component: () => import('@/views/CardsView.vue') },
-
-  // 404 Fallback
-  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/NotFoundView.vue') },
 ]
 
 const router = createRouter({
