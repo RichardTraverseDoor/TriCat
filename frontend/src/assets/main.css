@@ -4,51 +4,32 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
-  font-family: 'Quicksand', 'Comic Neue', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --app-bg: rgba(27, 32, 38, 0.92);
-  --app-border: rgba(148, 163, 184, 0.25);
-  --heading-font: 'Baloo 2', 'Quicksand', 'Comic Neue', 'Segoe UI', system-ui, sans-serif;
-}
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background-color: #0f172a;
-  background-image:
-    radial-gradient(circle at 10% 20%, rgba(15, 118, 110, 0.12) 0%, rgba(15, 118, 110, 0) 50%),
-    radial-gradient(circle at 80% 10%, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0) 50%),
-    url('../assets/paw-pattern.svg');
-  background-size: cover, cover, 180px;
-  background-attachment: fixed;
-  background-blend-mode: screen, screen, normal;
-  color: #e2f1e8;
-}
+  body {
+    @apply m-0 min-h-screen bg-slate-950 font-body text-emerald-50 antialiased;
+    background-color: #0f172a;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(15, 118, 110, 0.12) 0%, rgba(15, 118, 110, 0) 50%),
+      radial-gradient(circle at 80% 10%, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0) 50%),
+      url('../assets/paw-pattern.svg');
+    background-size: cover, cover, 180px;
+    background-attachment: fixed;
+    background-blend-mode: screen, screen, normal;
+  }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(160deg, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.75));
-  backdrop-filter: blur(6px);
-  z-index: -1;
-}
-
-.font-heading {
-  font-family: var(--heading-font);
-}
-
-.card-frosted {
-  background: rgba(30, 41, 59, 0.75);
-  border: 1px solid var(--app-border);
-  box-shadow: 0 25px 45px rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(8px);
-}
-
-.text-glow {
-  text-shadow: 0 1px 0 rgba(148, 163, 184, 0.6);
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(160deg, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.75));
+    backdrop-filter: blur(6px);
+    z-index: -1;
+  }
 }
 
 @media (max-width: 640px) {
