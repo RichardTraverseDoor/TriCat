@@ -2,15 +2,9 @@
   <div class="min-h-screen bg-gradient-to-br from-brand-dark to-slate-900">
     <main class="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-12 px-6 text-center">
       <header class="space-y-4">
-        <span class="inline-flex items-center gap-2 rounded-full bg-brand-light/20 px-4 py-1 text-sm font-medium text-brand-light">
-          <span class="inline-block h-2 w-2 rounded-full bg-emerald-400"></span>
-          PWA bereit
-        </span>
         <h1 class="text-4xl font-bold md:text-5xl">Willkommen bei TriCat</h1>
         <p class="text-lg text-slate-300 md:text-xl">
           TriCat ist in erster Linie dafür da, <strong class="text-brand-light">Dir</strong> das Leben zu vereinfachen!
-          <strong class="text-brand-light">Tailwind CSS</strong> und ist als
-          <strong class="text-brand-light">Progressive Web App</strong> vorbereitet.
         </p>
       </header>
 
