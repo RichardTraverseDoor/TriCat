@@ -114,7 +114,7 @@
               v-for="day in calendarDays"
               :key="day.key"
               type="button"
-              class="flex h-24 flex-col rounded-2xl border border-transparent bg-slate-900/60 p-3 text-left transition duration-200 ease-out"
+              class="relative flex h-24 flex-col rounded-2xl border border-transparent bg-slate-900/60 p-3 text-left transition duration-200 ease-out"
               :class="[
                 day.isCurrentMonth ? 'text-emerald-50 hover:-translate-y-1 hover:border-emerald-300/40 hover:bg-slate-900/80 hover:shadow-[0_18px_32px_rgba(16,185,129,0.22)]' : 'text-slate-500/60 opacity-70',
                 day.isToday ? 'border-emerald-400/60 bg-emerald-400/20 shadow-[0_18px_32px_rgba(16,185,129,0.25)]' : '',
@@ -124,15 +124,14 @@
               @click="handleDayClick(day)"
             >
               <span class="text-lg font-semibold">{{ day.label }}</span>
-              <div class="mt-auto flex flex-wrap gap-1">
-                <span
-                  v-for="event in eventsByDate.get(day.iso) ?? []"
-                  :key="event.id"
-                  class="inline-flex items-center justify-center rounded-full bg-emerald-400/20 px-2 py-1 text-xs text-emerald-100 shadow-[0_8px_18px_rgba(16,185,129,0.25)]"
-                >
-                  🐾 {{ event.title }}
-                </span>
-              </div>
+              <span
+                v-if="(eventsByDate.get(day.iso)?.length ?? 0) > 0"
+                class="pointer-events-none absolute bottom-3 right-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-400/25 text-lg shadow-[0_12px_22px_rgba(16,185,129,0.28)]"
+                aria-hidden="true"
+              >
+                🐾
+              </span>
+              <span v-if="(eventsByDate.get(day.iso)?.length ?? 0) > 0" class="sr-only">Termin vorhanden</span>
             </button>
           </div>
 
@@ -160,8 +159,37 @@
           >
             ✖️
           </button>
-          <h3 class="font-heading text-2xl text-emerald-200">Neuer Termin</h3>
+          <h3 class="font-heading text-2xl text-emerald-200">Schnurriger Terminplaner</h3>
           <p class="mt-1 text-sm text-emerald-100/70">{{ selectedDateLabel }}</p>
+
+          <section class="mt-5 space-y-3" aria-live="polite">
+            <div
+              v-if="eventsForSelectedDate.length === 0"
+              class="rounded-2xl border border-dashed border-emerald-300/30 bg-slate-900/70 px-4 py-3 text-sm text-emerald-100/80"
+            >
+              Noch keine Pfotenspuren an diesem Tag – füge deinen ersten Termin hinzu!
+            </div>
+            <ul v-else class="space-y-3">
+              <li
+                v-for="event in eventsForSelectedDate"
+                :key="event.id"
+                class="flex items-center justify-between gap-3 rounded-2xl border border-emerald-300/30 bg-slate-900/70 px-4 py-3"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="text-xl">🐾</span>
+                  <span class="text-sm font-semibold text-emerald-100">{{ event.title }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-transparent px-3 py-1 text-xs font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
+                  @click="deleteEvent(event.id)"
+                >
+                  ❌ Löschen
+                </button>
+              </li>
+            </ul>
+          </section>
+
           <form class="mt-6 space-y-4" @submit.prevent="addEvent">
             <label class="block text-sm font-semibold text-emerald-100">
               Titel deines Termins
@@ -364,6 +392,11 @@ const selectedDateLabel = computed(() => {
 
 const isAddingEvent = computed(() => selectedDate.value !== null);
 
+const eventsForSelectedDate = computed(() => {
+  if (!selectedDateIso.value) return [] as StoredEvent[];
+  return eventsByDate.value.get(selectedDateIso.value) ?? [];
+});
+
 const goToPreviousMonth = () => {
   const next = new Date(currentMonth.value);
   next.setMonth(next.getMonth() - 1);
@@ -408,6 +441,10 @@ const addEvent = () => {
 
   events.value = [...events.value, newEvent];
   closeForm();
+};
+
+const deleteEvent = (eventId: number) => {
+  events.value = events.value.filter((event) => event.id !== eventId);
 };
 </script>
 
