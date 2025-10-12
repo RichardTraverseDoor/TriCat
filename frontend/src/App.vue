@@ -7,9 +7,9 @@
       aria-hidden="true"
     ></div>
 
-    <main class="relative flex-1 px-4 pb-32 pt-10 sm:px-8 sm:pt-12 md:px-12 md:pb-16 lg:px-16">
-      <RouterView />
-    </main>
+      <main class="relative flex-1 px-4 pb-32 pt-10 sm:px-8 sm:pt-12 md:px-12 lg:px-16 lg:pb-16">
+        <RouterView />
+      </main>
 
     <NavBar />
   </div>

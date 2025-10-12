@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-500/30 bg-slate-900/85 backdrop-blur-md text-slate-200 md:static md:mt-auto md:border-none md:bg-transparent md:px-12 md:py-8 md:backdrop-blur-0 md:text-slate-100 md:shadow-none"
+    class="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-500/30 bg-slate-900/85 pb-[env(safe-area-inset-bottom)] text-slate-200 backdrop-blur-md lg:static lg:mt-auto lg:border-none lg:bg-transparent lg:px-12 lg:py-8 lg:pb-0 lg:backdrop-blur-0 lg:text-slate-100 lg:shadow-none"
   >
     <ul class="grid grid-cols-5 text-center text-[0.7rem] font-medium uppercase tracking-wide md:flex md:items-center md:justify-between md:text-sm md:normal-case md:tracking-normal md:gap-8">
       <li>
