@@ -72,68 +72,19 @@
         <div
           class="rounded-3xl border border-slate-400/20 bg-slate-900/70 p-6 shadow-[0_25px_45px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-8"
         >
-          <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 class="font-heading text-3xl text-emerald-200 sm:text-4xl">{{ monthLabel }}</h2>
-              <p class="text-sm text-emerald-100/70">Tippe auf einen Tag, um einen neuen Termin zu streicheln.</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                class="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/20"
-                @click="goToPreviousMonth"
-              >
-                ⬅️ <span class="hidden sm:inline">Zurück</span>
-              </button>
-              <button
-                type="button"
-                class="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/20"
-                @click="goToToday"
-              >
-                🐾 Heute
-              </button>
-              <button
-                type="button"
-                class="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/20"
-                @click="goToNextMonth"
-              >
-                <span class="hidden sm:inline">Weiter</span> ➡️
-              </button>
-            </div>
-          </header>
-
-          <div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-200/80 sm:text-sm">
-            <span v-for="weekday in weekdays" :key="weekday.short" class="rounded-full bg-emerald-400/10 py-2">
-              <span class="hidden sm:inline">{{ weekday.long }}</span>
-              <span class="sm:hidden">{{ weekday.short }}</span>
-            </span>
-          </div>
-
-          <div class="mt-4 grid grid-cols-7 gap-2 text-sm">
-            <button
-              v-for="day in calendarDays"
-              :key="day.key"
-              type="button"
-              class="relative flex h-24 flex-col rounded-2xl border border-transparent bg-slate-900/60 p-3 text-left transition duration-200 ease-out"
-              :class="[
-                day.isCurrentMonth ? 'text-emerald-50 hover:-translate-y-1 hover:border-emerald-300/40 hover:bg-slate-900/80 hover:shadow-[0_18px_32px_rgba(16,185,129,0.22)]' : 'text-slate-500/60 opacity-70',
-                day.isToday ? 'border-emerald-400/60 bg-emerald-400/20 shadow-[0_18px_32px_rgba(16,185,129,0.25)]' : '',
-                selectedDateIso === day.iso ? 'ring-2 ring-emerald-300/80 ring-offset-2 ring-offset-slate-950' : ''
-              ]"
-              :disabled="!day.isCurrentMonth"
-              @click="handleDayClick(day)"
-            >
-              <span class="text-lg font-semibold">{{ day.label }}</span>
-              <span
-                v-if="(eventsByDate.get(day.iso)?.length ?? 0) > 0"
-                class="pointer-events-none absolute bottom-3 right-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-400/25 text-lg shadow-[0_12px_22px_rgba(16,185,129,0.28)]"
-                aria-hidden="true"
-              >
-                🐾
-              </span>
-              <span v-if="(eventsByDate.get(day.iso)?.length ?? 0) > 0" class="sr-only">Termin vorhanden</span>
-            </button>
-          </div>
+          <CalendarHeader 
+            :monthLabel="monthLabel"
+            @prev="gotToPreviousMonth"
+            @today="goToToday"
+            @next="goToNextMonth"
+          />
+          <CalendarGrid
+            :days="calendarDays"
+            :eventsByDate="eventsByDate"
+            :selectedDateIso="selectedDateIso"
+            :weekdays="weekdays"
+            @select="handleDayClick"
+          />
 
           <footer class="mt-6 flex flex-wrap items-center gap-2 text-xs text-emerald-100/70 sm:text-sm">
             <span class="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1">🐾</span>
@@ -143,93 +94,23 @@
       </section>
     </main>
 
-    <transition name="fade">
-      <div
-        v-if="isAddingEvent"
-        class="fixed inset-0 z-20 grid place-items-center bg-slate-950/70 backdrop-blur"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div
-          class="relative flex w-full max-w-md flex-col gap-4 overflow-hidden rounded-3xl border border-emerald-300/30 bg-slate-900/90 p-6 text-emerald-50 shadow-[0_25px_45px_rgba(16,185,129,0.3)] sm:p-8 max-h-[85vh]"
-        >
-          <button
-            type="button"
-            class="absolute right-4 top-4 rounded-full border border-emerald-300/30 bg-slate-900/80 p-2 text-sm text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/20"
-            aria-label="Schließen"
-            @click="closeForm"
-          >
-            ✖️
-          </button>
-          <h3 class="font-heading text-2xl text-emerald-200">Schnurriger Terminplaner</h3>
-          <p class="mt-1 text-sm text-emerald-100/70">{{ selectedDateLabel }}</p>
-
-          <section
-            class="mt-5 flex max-h-[40vh] flex-col gap-3 overflow-y-auto pr-1"
-            aria-live="polite"
-          >
-            <div
-              v-if="eventsForSelectedDate.length === 0"
-              class="rounded-2xl border border-dashed border-emerald-300/30 bg-slate-900/70 px-4 py-3 text-sm text-emerald-100/80"
-            >
-              Noch keine Pfotenspuren an diesem Tag – füge deinen ersten Termin hinzu!
-            </div>
-            <ul v-else class="flex flex-col gap-3">
-              <li
-                v-for="event in eventsForSelectedDate"
-                :key="event.id"
-                class="flex items-center justify-between gap-3 rounded-2xl border border-emerald-300/30 bg-slate-900/70 px-4 py-3"
-              >
-                <div class="flex items-center gap-3">
-                  <span class="text-xl">🐾</span>
-                  <span class="text-sm font-semibold text-emerald-100">{{ event.title }}</span>
-                </div>
-                <button
-                  type="button"
-                  class="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-transparent px-3 py-1 text-xs font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
-                  @click="deleteEvent(event.id)"
-                >
-                  ❌ Löschen
-                </button>
-              </li>
-            </ul>
-          </section>
-
-          <form class="mt-2 space-y-4" @submit.prevent="addEvent">
-            <label class="block text-sm font-semibold text-emerald-100">
-              Titel deines Termins
-              <input
-                v-model="newEventTitle"
-                type="text"
-                required
-                class="mt-2 w-full rounded-2xl border border-emerald-300/30 bg-slate-900/80 px-4 py-2 text-base text-emerald-50 shadow-[0_12px_24px_rgba(16,185,129,0.18)] focus:border-emerald-300/60 focus:outline-none focus:ring-2 focus:ring-emerald-300/40"
-                placeholder="z. B. Mathe-Session mit Mieze"
-              />
-            </label>
-            <div class="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                class="rounded-full border border-emerald-300/30 bg-transparent px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
-                @click="closeForm"
-              >
-                Abbrechen
-              </button>
-              <button
-                type="submit"
-                class="inline-flex items-center gap-2 rounded-full border border-emerald-300/60 bg-emerald-400/20 px-5 py-2 text-sm font-semibold text-emerald-50 shadow-[0_18px_32px_rgba(16,185,129,0.24)] transition hover:bg-emerald-400/30"
-              >
-                ✅ Termin speichern
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </transition>
+    <CalendarModal
+      :isAddingEvent="isAddingEvent"
+      :selectedDateLabel="selectedDateLabel"
+      :eventsForSelectedDate="eventsForSelectedDate"
+      v-model:newEventTitle="newEventTitle"
+      @close="closeForm"
+      @add="addEvent"
+      @delete="deleteEvent"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import CalendarHeader from '@/components/calendar/CalendarHeader.vue'
+import CalendarGrid from '@/components/calendar/CalendarGrid.vue'
+import CalendarModal from '@/components/calendar/CalendarModal.vue'
 
 interface StoredEvent {
   id: number;
