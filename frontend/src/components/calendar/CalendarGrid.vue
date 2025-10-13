@@ -45,11 +45,11 @@
 </template>
 
 <script setup lang="ts">
-import type { CalendarDay } from '@/types/calendar'
+import type { CalendarDay, StoredEvent } from '@/types/calendar'
 
 defineProps<{
   days: CalendarDay[]
-  eventsByDate: Map<string, any[]>
+  eventsByDate: Map<string, StoredEvent[]>
   selectedDateIso: string
   weekdays: { short: string; long: string }[]
 }>()
