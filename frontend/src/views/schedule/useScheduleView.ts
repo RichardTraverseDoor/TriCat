@@ -13,19 +13,34 @@ interface ScheduleState {
   entries: ScheduleEntry[];
 }
 
-const initialTimeSlots: ScheduleTimeSlot[] = [
-  '08:00',
-  '09:00',
-  '10:00',
-  '11:00',
-  '12:00',
-  '13:00',
-  '14:00',
-  '15:00',
-  '16:00',
-  '17:00',
-  '18:00',
-];
+const toMinutes = (time: string) => {
+  const [hours, minutes] = time.split(':').map((value) => Number.parseInt(value, 10));
+  return hours * 60 + minutes;
+};
+
+const fromMinutes = (value: number) => {
+  const hours = Math.floor(value / 60)
+    .toString()
+    .padStart(2, '0');
+  const minutes = Math.floor(value % 60)
+    .toString()
+    .padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+const generateTimeSlots = (start: string, end: string, stepMinutes: number): ScheduleTimeSlot[] => {
+  const slots: ScheduleTimeSlot[] = [];
+  const startMinutes = toMinutes(start);
+  const endMinutes = toMinutes(end);
+
+  for (let current = startMinutes; current <= endMinutes; current += stepMinutes) {
+    slots.push(fromMinutes(current));
+  }
+
+  return slots;
+};
+
+const initialTimeSlots: ScheduleTimeSlot[] = generateTimeSlots('08:00', '20:00', 15);
 
 let entryCounter = 1;
 
@@ -39,8 +54,8 @@ const initialEntries: ScheduleEntry[] = [
     title: 'Mathematische Schnurranalyse',
     type: 'lecture',
     day: 'monday',
-    startTime: '09:00',
-    endTime: '11:00',
+    startTime: '09:15',
+    endTime: '10:45',
     room: 'A2 Schnurrsaal',
   }),
   createEntry({

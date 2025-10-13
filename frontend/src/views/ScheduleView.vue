@@ -17,6 +17,7 @@
           :time-slots="timeSlots"
           :entries="entries"
           @remove="removeEntry"
+          @inspect="openEntry"
         />
 
         <aside class="flex flex-col gap-6">
@@ -36,15 +37,30 @@
         </aside>
       </section>
     </main>
+    <ScheduleEntryModal :entry="selectedEntry" :open="isModalOpen" @close="closeModal" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import ScheduleForm from '@/components/schedule/ScheduleForm.vue';
 import ScheduleGrid from '@/components/schedule/ScheduleGrid.vue';
 import ScheduleLegend from '@/components/schedule/ScheduleLegend.vue';
+import ScheduleEntryModal from '@/components/schedule/ScheduleEntryModal.vue';
 import ScheduleHero from '@/views/schedule/components/ScheduleHero.vue';
 import { useScheduleView } from '@/views/schedule/useScheduleView';
+import type { ScheduleEntry } from '@/types/schedule';
 
 const { dayOrder, timeSlots, entries, entryCount, busiestDayLabel, busiestDayEmoji, addEntry, removeEntry } = useScheduleView();
+
+const selectedEntry = ref<ScheduleEntry | null>(null);
+const isModalOpen = computed(() => selectedEntry.value !== null);
+
+const openEntry = (entry: ScheduleEntry) => {
+  selectedEntry.value = entry;
+};
+
+const closeModal = () => {
+  selectedEntry.value = null;
+};
 </script>
