@@ -3,7 +3,7 @@
     class="relative overflow-hidden rounded-3xl border border-emerald-300/20 bg-slate-900/70 shadow-[0_25px_45px_rgba(15,23,42,0.55)] backdrop-blur-xl"
   >
     <header
-      class="flex items-center justify-between gap-3 border-b border-emerald-300/20 bg-emerald-400/5 px-6 py-4 text-emerald-100"
+      class="flex flex-col gap-3 border-b border-emerald-300/20 bg-emerald-400/5 px-5 py-4 text-emerald-100 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6"
     >
       <div>
         <p class="text-sm uppercase tracking-[0.2em] text-emerald-200/70">Stundenplan</p>
@@ -12,87 +12,93 @@
       <span class="text-3xl">📅</span>
     </header>
 
-    <div
-      class="grid divide-y divide-emerald-300/10 text-emerald-50"
-      :style="{ gridTemplateRows: `auto repeat(${timeSlots.length}, minmax(72px, 1fr))` }"
-    >
-      <div
-        class="grid divide-x divide-emerald-300/10 bg-emerald-400/10 px-6 py-4 text-sm font-semibold uppercase tracking-widest"
-        :style="{ gridTemplateColumns }">
-        <span class="text-emerald-200/80">Zeit</span>
-        <span
-          v-for="day in dayOrder"
-          :key="day"
-          class="flex items-center justify-center gap-2 text-center"
-        >
-          <span aria-hidden="true">{{ scheduleDayEmojis[day] }}</span>
-          {{ scheduleDayLabels[day] }}
-        </span>
-      </div>
-
-      <template v-for="slot in timeSlots" :key="slot">
+    <div class="relative">
+      <div class="-mx-5 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0">
         <div
-          class="grid divide-x divide-emerald-300/10 px-6 py-4 text-sm"
-          :style="{ gridTemplateColumns }"
+          class="grid min-w-[640px] divide-y divide-emerald-300/10 text-emerald-50 sm:min-w-0"
+          :style="{ gridTemplateRows: `auto repeat(${timeSlots.length}, minmax(64px, 1fr))` }"
         >
-          <div class="flex flex-col justify-center gap-1 text-emerald-200/80">
-            <span class="font-semibold">{{ slot }}</span>
-            <span class="text-xs text-emerald-200/60">Schnurr-Zeit</span>
+          <div
+            class="grid divide-x divide-emerald-300/10 bg-emerald-400/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-100/90 sm:px-6 sm:py-4 sm:text-sm sm:tracking-widest"
+            :style="{ gridTemplateColumns }"
+          >
+            <span class="text-emerald-200/80">Zeit</span>
+            <span
+              v-for="day in dayOrder"
+              :key="day"
+              class="flex items-center justify-center gap-2 text-center"
+            >
+              <span aria-hidden="true">{{ scheduleDayEmojis[day] }}</span>
+              <span class="hidden sm:inline">{{ scheduleDayLabels[day] }}</span>
+              <span class="text-xs font-semibold uppercase tracking-[0.3em] sm:hidden">{{ scheduleDayLabels[day].slice(0, 2) }}</span>
+            </span>
           </div>
 
-          <div
-            v-for="day in dayOrder"
-            :key="`${day}-${slot}`"
-            class="flex h-full flex-col gap-2"
-          >
-            <article
-              v-for="entry in cellEntries(day, slot)"
-              :key="entry.id"
-              class="group relative flex h-full flex-col gap-2 rounded-2xl border px-3 py-2 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-              :class="typeMeta(entry.type).cardClass"
+          <template v-for="slot in timeSlots" :key="slot">
+            <div
+              class="grid divide-x divide-emerald-300/10 px-4 py-3 text-xs sm:px-6 sm:py-4 sm:text-sm"
+              :style="{ gridTemplateColumns }"
             >
-              <div class="flex items-start justify-between gap-2 text-xs uppercase tracking-[0.18em]">
-                <span class="inline-flex items-center gap-1 text-emerald-50/80">
-                  <span aria-hidden="true">{{ typeMeta(entry.type).icon }}</span>
-                  {{ typeMeta(entry.type).label }}
-                </span>
-                <button
-                  type="button"
-                  class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-slate-900/50 text-[10px] font-semibold text-emerald-100/80 opacity-0 transition group-hover:opacity-100"
-                  @click="emit('remove', entry.id)"
-                  aria-label="Termin entfernen"
-                >
-                  ✕
-                </button>
+              <div class="flex flex-col justify-center gap-1 text-emerald-200/80">
+                <span class="font-semibold">{{ slot }}</span>
+                <span class="text-[10px] uppercase tracking-[0.25em] text-emerald-200/60 sm:text-xs">Schnurr-Zeit</span>
               </div>
 
-              <h3 class="text-base font-semibold text-emerald-50">{{ entry.title }}</h3>
+              <div
+                v-for="day in dayOrder"
+                :key="`${day}-${slot}`"
+                class="flex h-full flex-col gap-2"
+              >
+                <article
+                  v-for="entry in cellEntries(day, slot)"
+                  :key="entry.id"
+                  class="group relative flex h-full flex-col gap-1 rounded-2xl border px-3 py-2 text-xs shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:gap-2 sm:text-sm"
+                  :class="typeMeta(entry.type).cardClass"
+                >
+                  <div class="flex items-start justify-between gap-2 text-[10px] uppercase tracking-[0.18em] sm:text-xs">
+                    <span class="inline-flex items-center gap-1 text-emerald-50/80">
+                      <span aria-hidden="true">{{ typeMeta(entry.type).icon }}</span>
+                      {{ typeMeta(entry.type).label }}
+                    </span>
+                    <button
+                      type="button"
+                      class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-slate-900/50 text-[10px] font-semibold text-emerald-100/80 transition sm:opacity-0 sm:group-hover:opacity-100"
+                      @click="emit('remove', entry.id)"
+                      aria-label="Termin entfernen"
+                    >
+                      ✕
+                    </button>
+                  </div>
 
-              <dl class="mt-auto space-y-1 text-xs text-emerald-100/80">
-                <div class="flex items-center justify-between">
-                  <dt class="font-medium">Zeit</dt>
-                  <dd>{{ entry.startTime }} – {{ entry.endTime }}</dd>
-                </div>
-                <div class="flex items-center justify-between">
-                  <dt class="font-medium">Raum</dt>
-                  <dd>{{ entry.room || '🐾 noch offen' }}</dd>
-                </div>
-              </dl>
-            </article>
+                  <h3 class="text-sm font-semibold text-emerald-50 sm:text-base">{{ entry.title }}</h3>
 
-            <div
-              v-if="cellEntries(day, slot).length === 0"
-              class="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-emerald-300/20 bg-emerald-400/5 px-3 py-4 text-xs text-emerald-200/70"
-            >
-              <span class="text-lg">🐾</span>
-              Frei zum Kuscheln
+                  <dl class="mt-auto space-y-1 text-[10px] text-emerald-100/80 sm:text-xs">
+                    <div class="flex items-center justify-between gap-2">
+                      <dt class="font-medium">Zeit</dt>
+                      <dd>{{ entry.startTime }} – {{ entry.endTime }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                      <dt class="font-medium">Raum</dt>
+                      <dd class="truncate" :title="entry.room || '🐾 noch offen'">{{ entry.room || '🐾 noch offen' }}</dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <div
+                  v-if="cellEntries(day, slot).length === 0"
+                  class="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-emerald-300/20 bg-emerald-400/5 px-3 py-4 text-[10px] text-emerald-200/70 sm:text-xs"
+                >
+                  <span class="text-lg">🐾</span>
+                  Frei zum Kuscheln
+                </div>
+              </div>
             </div>
-          </div>
+          </template>
         </div>
-      </template>
+      </div>
     </div>
 
-    <footer class="flex flex-wrap items-center gap-3 border-t border-emerald-300/20 bg-emerald-400/5 px-6 py-4 text-xs text-emerald-100/70">
+    <footer class="flex flex-wrap items-center gap-3 border-t border-emerald-300/20 bg-emerald-400/5 px-5 py-4 text-[11px] text-emerald-100/70 sm:px-6 sm:text-xs">
       <span class="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1">
         🐱
       </span>
@@ -162,7 +168,7 @@ const entriesByKey = computed(() => {
   return map;
 });
 
-const gridTemplateColumns = computed(() => `minmax(96px, 0.85fr) repeat(${props.dayOrder.length}, minmax(0, 1fr))`);
+const gridTemplateColumns = computed(() => `minmax(80px, 0.8fr) repeat(${props.dayOrder.length}, minmax(0, 1fr))`);
 
 const typeMeta = (type: ScheduleEntry['type']) => scheduleEntryTypeMeta[type];
 
