@@ -34,30 +34,43 @@
 
     <ul v-else class="space-y-3">
       <li v-for="list in lists" :key="list.id">
-        <button
-          type="button"
-          class="w-full rounded-3xl border border-transparent bg-slate-900/40 p-5 text-left transition hover:border-emerald-400/40 hover:bg-slate-900/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+        <article
+          class="group rounded-3xl border border-transparent bg-slate-900/40 p-5 transition hover:border-emerald-400/40 hover:bg-slate-900/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
           :class="{
             'border-emerald-400/60 bg-slate-900/70 shadow-[0_0_25px_rgba(52,211,153,0.25)]': list.id === activeListId
           }"
+          role="button"
+          tabindex="0"
           @click="$emit('select', list.id)"
+          @keydown.enter.stop.prevent="$emit('select', list.id)"
+          @keydown.space.stop.prevent="$emit('select', list.id)"
         >
           <div class="flex items-start justify-between gap-4">
             <div>
               <h3 class="font-heading text-xl text-emerald-100">{{ list.name }}</h3>
               <p class="text-sm text-emerald-100/70">{{ list.mood }}</p>
             </div>
-            <div class="flex flex-col items-end text-right text-xs text-emerald-100/60">
-              <span class="rounded-full bg-emerald-400/10 px-3 py-1 font-medium text-emerald-100/90">
-                {{ list.dishes.length }} Gericht{{ list.dishes.length === 1 ? '' : 'e' }}
-              </span>
-              <span class="mt-2 flex items-center gap-1 text-[11px]">
-                <Sparkles class="h-3.5 w-3.5" />
-                {{ getOpenIngredients(list) }} frei flatternde Zutaten
-              </span>
+            <div class="flex items-start gap-3">
+              <div class="flex flex-col items-end text-right text-xs text-emerald-100/60">
+                <span class="rounded-full bg-emerald-400/10 px-3 py-1 font-medium text-emerald-100/90">
+                  {{ list.dishes.length }} Gericht{{ list.dishes.length === 1 ? '' : 'e' }}
+                </span>
+                <span class="mt-2 flex items-center gap-1 text-[11px]">
+                  <Sparkles class="h-3.5 w-3.5" />
+                  {{ getOpenIngredients(list) }} frei flatternde Zutaten
+                </span>
+              </div>
+              <button
+                type="button"
+                class="rounded-full p-2 text-emerald-100/40 transition hover:bg-slate-900/80 hover:text-emerald-200"
+                @click.stop="$emit('remove', list.id)"
+                aria-label="Liste löschen"
+              >
+                <Trash2 class="h-4 w-4" aria-hidden="true" />
+              </button>
             </div>
           </div>
-        </button>
+        </article>
       </li>
     </ul>
   </aside>
@@ -65,7 +78,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { PawPrint, Plus, Sparkles } from 'lucide-vue-next';
+import { PawPrint, Plus, Sparkles, Trash2 } from 'lucide-vue-next';
 
 import type { ShoppingList } from '@/types/shopping';
 
@@ -77,6 +90,7 @@ const props = defineProps<{
 defineEmits<{
   (e: 'select', id: string): void;
   (e: 'create'): void;
+  (e: 'remove', id: string): void;
 }>();
 
 const getOpenIngredients = (list: ShoppingList) =>

@@ -19,12 +19,21 @@
           <p class="mt-1 text-sm text-emerald-100/70">{{ list.mood }}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 rounded-2xl bg-slate-900/70 px-4 py-3 text-xs text-emerald-100/70">
-        <Fish class="h-4 w-4" aria-hidden="true" />
-        <div class="leading-tight">
-          <p class="font-semibold text-emerald-100">{{ list.dishes.length }} Gericht{{ list.dishes.length === 1 ? '' : 'e' }}</p>
-          <p>{{ remainingIngredients }} Zutaten miauen noch</p>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 rounded-2xl bg-slate-900/70 px-4 py-3 text-xs text-emerald-100/70">
+          <Fish class="h-4 w-4" aria-hidden="true" />
+          <div class="leading-tight">
+            <p class="font-semibold text-emerald-100">{{ list.dishes.length }} Gericht{{ list.dishes.length === 1 ? '' : 'e' }}</p>
+            <p>{{ remainingIngredients }} Zutaten miauen noch</p>
+          </div>
         </div>
+        <button
+          type="button"
+          class="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-400/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+          @click="onRemoveList"
+        >
+          Liste löschen
+        </button>
       </div>
     </header>
 
@@ -59,9 +68,19 @@
             <h3 class="font-heading text-xl text-emerald-100">{{ dish.name }}</h3>
             <p class="text-xs uppercase tracking-[0.25em] text-emerald-200/60">Lieblings-Leckerlis</p>
           </div>
-          <span class="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-100/80">
-            {{ openIngredientsPerDish(dish) }} / {{ dish.ingredients.length }} offen
-          </span>
+          <div class="flex items-center gap-3">
+            <span class="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-100/80">
+              {{ openIngredientsPerDish(dish) }} / {{ dish.ingredients.length }} offen
+            </span>
+            <button
+              type="button"
+              class="rounded-full p-2 text-emerald-100/60 transition hover:bg-slate-900/80 hover:text-emerald-200"
+              @click="emit('remove-dish', { listId: list.id, dishId: dish.id })"
+            >
+              <Trash2 class="h-4 w-4" aria-hidden="true" />
+              <span class="sr-only">Gericht entfernen</span>
+            </button>
+          </div>
         </header>
 
         <ul class="mt-4 space-y-3">
@@ -137,6 +156,8 @@ const emit = defineEmits<{
   (e: 'add-ingredient', payload: { listId: string; dishId: string; name: string }): void;
   (e: 'toggle-ingredient', payload: { listId: string; dishId: string; ingredientId: string }): void;
   (e: 'remove-ingredient', payload: { listId: string; dishId: string; ingredientId: string }): void;
+  (e: 'remove-dish', payload: { listId: string; dishId: string }): void;
+  (e: 'remove-list', id: string): void;
 }>();
 
 const dishName = ref('');
@@ -154,9 +175,15 @@ watch(
 watch(
   () => props.list.dishes,
   (dishes) => {
+    const dishIds = new Set(dishes.map((dish) => dish.id));
     for (const dish of dishes) {
       if (!(dish.id in ingredientDrafts)) {
         ingredientDrafts[dish.id] = '';
+      }
+    }
+    for (const id of Object.keys(ingredientDrafts)) {
+      if (!dishIds.has(id)) {
+        delete ingredientDrafts[id];
       }
     }
   },
@@ -197,5 +224,9 @@ const onAddIngredient = (dishId: string) => {
   if (!name) return;
   emit('add-ingredient', { listId: props.list.id, dishId, name });
   ingredientDrafts[dishId] = '';
+};
+
+const onRemoveList = () => {
+  emit('remove-list', props.list.id);
 };
 </script>

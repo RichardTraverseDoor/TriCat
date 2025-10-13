@@ -37,6 +37,7 @@
         :active-list-id="activeListId"
         @select="selectList"
         @create="createList"
+        @remove="removeList"
       />
 
       <ShoppingListDetail
@@ -47,6 +48,8 @@
         @add-ingredient="addIngredient"
         @toggle-ingredient="toggleIngredient"
         @remove-ingredient="removeIngredient"
+        @remove-dish="removeDish"
+        @remove-list="removeList"
       />
       <div
         v-else
@@ -234,5 +237,23 @@ const removeIngredient = ({
   if (!dish) return;
 
   dish.ingredients = dish.ingredients.filter((entry) => entry.id !== ingredientId);
+};
+
+const removeDish = ({ listId, dishId }: { listId: string; dishId: string }) => {
+  const list = lists.value.find((entry) => entry.id === listId);
+  if (!list) return;
+
+  list.dishes = list.dishes.filter((entry) => entry.id !== dishId);
+};
+
+const removeList = (id: string) => {
+  const index = lists.value.findIndex((entry) => entry.id === id);
+  if (index === -1) return;
+
+  lists.value.splice(index, 1);
+
+  if (activeListId.value === id) {
+    activeListId.value = lists.value[0]?.id ?? null;
+  }
 };
 </script>
