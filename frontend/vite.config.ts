@@ -1,14 +1,23 @@
+import fs from 'fs';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { VitePWA } from 'vite-plugin-pwa';
-import path from 'path'; 
+import path from 'path';
 
 export default defineConfig({
+  // 🧭 Basis-Pfad auf RELATIV stellen, sonst 404 bei Deployment auf Plesk
+  base: './',
+
   plugins: [
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'robots.txt', 'icons/icon.svg', 'icons/maskable.svg'],
+      includeAssets: [
+        'favicon.svg',
+        'robots.txt',
+        'icons/icon.svg',
+        'icons/maskable.svg'
+      ],
       manifest: {
         name: 'TriCat',
         short_name: 'TriCat',
@@ -16,8 +25,8 @@ export default defineConfig({
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
-        scope: '/',
-        start_url: '/',
+        scope: './', // 👈 ebenfalls relativ!
+        start_url: './',
         icons: [
           {
             src: 'icons/icon.svg',
@@ -32,16 +41,29 @@ export default defineConfig({
             purpose: 'maskable'
           }
         ]
+      },
+      devOptions: {
+        enabled: true // erlaubt PWA-Funktion auch im Dev-Modus
       }
     })
   ],
-  // 👇 das hier füge hinzu
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
     }
   },
+
+  // Lokale Dev-Server-Konfiguration (optional für dein System)
   server: {
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    https: {
+      key: fs.existsSync(path.resolve(__dirname, 'cert/key.pem'))
+        ? fs.readFileSync(path.resolve(__dirname, 'cert/key.pem'))
+        : undefined,
+      cert: fs.existsSync(path.resolve(__dirname, 'cert/cert.pem'))
+        ? fs.readFileSync(path.resolve(__dirname, 'cert/cert.pem'))
+        : undefined
+    }
   }
 });
