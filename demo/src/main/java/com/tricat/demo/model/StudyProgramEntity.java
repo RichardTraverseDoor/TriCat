@@ -1,5 +1,6 @@
 package com.tricat.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ public class StudyProgramEntity {
     private String name;
 
     @OneToMany(mappedBy = "studyProgram", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<SemesterEntity> semesters = new ArrayList<>();
 
     public StudyProgramEntity() {}

@@ -1,17 +1,18 @@
 export interface Course {
-  id: string;
+  id: number;
   name: string;
   ects: number | null;
   grade: number | null;
 }
 
 export interface Semester {
-  id: string;
+  id: number;
   title: string;
   courses: Course[];
 }
 
 export interface StudyProgram {
+  id: number;
   name: string;
   semesters: Semester[];
 }
