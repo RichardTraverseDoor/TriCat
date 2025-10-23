@@ -57,6 +57,13 @@ export default defineConfig({
   // Lokale Dev-Server-Konfiguration (optional für dein System)
   server: {
     host: '0.0.0.0',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8081', // dein Spring Boot Backend
+        changeOrigin: true,
+        secure: false
+      }
+    },
     https: {
       key: fs.existsSync(path.resolve(__dirname, 'cert/key.pem'))
         ? fs.readFileSync(path.resolve(__dirname, 'cert/key.pem'))
