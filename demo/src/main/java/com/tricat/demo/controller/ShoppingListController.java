@@ -33,6 +33,23 @@ public class ShoppingListController {
         return listRepo.save(list);
     }
 
+    // --- Liste aktualisieren (z. B. Name oder Stimmung) ---
+    @PatchMapping("/{id}")
+    public ShoppingList updateList(@PathVariable Long id, @RequestBody ShoppingList payload) {
+        ShoppingList list = listRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("List not found"));
+
+        if (payload.getName() != null) {
+            list.setName(payload.getName());
+        }
+
+        if (payload.getMood() != null) {
+            list.setMood(payload.getMood());
+        }
+
+        return listRepo.save(list);
+    }
+
     // --- Liste löschen ---
     @DeleteMapping("/{id}")
     public void deleteList(@PathVariable Long id) {

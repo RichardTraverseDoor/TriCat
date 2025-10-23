@@ -144,20 +144,20 @@ import { Cat, Feather, Fish, PlusCircle, Trash2 } from 'lucide-vue-next';
 
 import type { Dish, ShoppingList } from '@/types/shopping';
 
-type IngredientDraftMap = Record<string, string>;
+type IngredientDraftMap = Record<number, string>;
 
 const props = defineProps<{
   list: ShoppingList;
 }>();
 
 const emit = defineEmits<{
-  (e: 'rename', payload: { id: string; name: string }): void;
-  (e: 'add-dish', payload: { listId: string; name: string }): void;
-  (e: 'add-ingredient', payload: { listId: string; dishId: string; name: string }): void;
-  (e: 'toggle-ingredient', payload: { listId: string; dishId: string; ingredientId: string }): void;
-  (e: 'remove-ingredient', payload: { listId: string; dishId: string; ingredientId: string }): void;
-  (e: 'remove-dish', payload: { listId: string; dishId: string }): void;
-  (e: 'remove-list', id: string): void;
+  (e: 'rename', payload: { id: number; name: string }): void;
+  (e: 'add-dish', payload: { listId: number; name: string }): void;
+  (e: 'add-ingredient', payload: { listId: number; dishId: number; name: string }): void;
+  (e: 'toggle-ingredient', payload: { listId: number; dishId: number; ingredientId: number }): void;
+  (e: 'remove-ingredient', payload: { listId: number; dishId: number; ingredientId: number }): void;
+  (e: 'remove-dish', payload: { listId: number; dishId: number }): void;
+  (e: 'remove-list', id: number): void;
 }>();
 
 const dishName = ref('');
@@ -182,8 +182,9 @@ watch(
       }
     }
     for (const id of Object.keys(ingredientDrafts)) {
-      if (!dishIds.has(id)) {
-        delete ingredientDrafts[id];
+      const numericId = Number(id);
+      if (!dishIds.has(numericId)) {
+        delete ingredientDrafts[numericId];
       }
     }
   },
@@ -219,7 +220,7 @@ const onCreateDish = () => {
   dishName.value = '';
 };
 
-const onAddIngredient = (dishId: string) => {
+const onAddIngredient = (dishId: number) => {
   const name = ingredientDrafts[dishId]?.trim();
   if (!name) return;
   emit('add-ingredient', { listId: props.list.id, dishId, name });

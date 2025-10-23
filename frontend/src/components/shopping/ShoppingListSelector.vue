@@ -84,13 +84,13 @@ import type { ShoppingList } from '@/types/shopping';
 
 const props = defineProps<{
   lists: ShoppingList[];
-  activeListId: string | null;
+  activeListId: number | null;
 }>();
 
 defineEmits<{
-  (e: 'select', id: string): void;
+  (e: 'select', id: number): void;
   (e: 'create'): void;
-  (e: 'remove', id: string): void;
+  (e: 'remove', id: number): void;
 }>();
 
 const getOpenIngredients = (list: ShoppingList) =>
