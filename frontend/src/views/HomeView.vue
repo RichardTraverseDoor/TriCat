@@ -38,41 +38,65 @@
       >
         <h2 class="mb-6 text-center font-heading text-3xl text-emerald-200 sm:mb-8 sm:text-4xl">Was TriCat alles kann</h2>
         <ol class="grid gap-4 sm:grid-cols-2">
-          <li
-            class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)]"
-          >
-            <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">📅</span>
-            <div class="space-y-1">
-              <h3 class="font-heading text-lg text-emerald-100">Kalender</h3>
-              <p class="text-sm text-slate-200/75">Behalte deine Termine und Deadlines immer im Blick.</p>
-            </div>
+          <li>
+            <RouterLink
+              to="/calendar"
+              class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+            >
+              <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">📅</span>
+              <div class="space-y-1">
+                <h3 class="font-heading text-lg text-emerald-100">Kalender</h3>
+                <p class="text-sm text-slate-200/75">Behalte deine Termine und Deadlines immer im Blick.</p>
+              </div>
+            </RouterLink>
           </li>
-          <li
-            class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)]"
-          >
-            <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">🗓️</span>
-            <div class="space-y-1">
-              <h3 class="font-heading text-lg text-emerald-100">Plan</h3>
-              <p class="text-sm text-slate-200/75">Gestalte deinen Stundenplan so flexibel wie du bist.</p>
-            </div>
+          <li>
+            <RouterLink
+              to="/schedule"
+              class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+            >
+              <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">🗓️</span>
+              <div class="space-y-1">
+                <h3 class="font-heading text-lg text-emerald-100">Plan</h3>
+                <p class="text-sm text-slate-200/75">Gestalte deinen Stundenplan so flexibel wie du bist.</p>
+              </div>
+            </RouterLink>
           </li>
-          <li
-            class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)]"
-          >
-            <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">📈</span>
-            <div class="space-y-1">
-              <h3 class="font-heading text-lg text-emerald-100">Noten</h3>
-              <p class="text-sm text-slate-200/75">Behalt den Überblick über deinen Fortschritt und feiere Erfolge.</p>
-            </div>
+          <li>
+            <RouterLink
+              to="/grades"
+              class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+            >
+              <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">📈</span>
+              <div class="space-y-1">
+                <h3 class="font-heading text-lg text-emerald-100">Noten</h3>
+                <p class="text-sm text-slate-200/75">Behalt den Überblick über deinen Fortschritt und feiere Erfolge.</p>
+              </div>
+            </RouterLink>
           </li>
-          <li
-            class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)]"
-          >
-            <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">🧠</span>
-            <div class="space-y-1">
-              <h3 class="font-heading text-lg text-emerald-100">Karten</h3>
-              <p class="text-sm text-slate-200/75">Lerne spielerisch mit Karten, die sich an deinen Stil anpassen.</p>
-            </div>
+          <li>
+            <RouterLink
+              to="/cards"
+              class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+            >
+              <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">🧠</span>
+              <div class="space-y-1">
+                <h3 class="font-heading text-lg text-emerald-100">Karten</h3>
+                <p class="text-sm text-slate-200/75">Lerne spielerisch mit Karten, die sich an deinen Stil anpassen.</p>
+              </div>
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/shopping"
+              class="flex items-start gap-3 rounded-2xl border border-slate-400/15 bg-slate-900/60 p-4 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(16,185,129,0.22)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+            >
+              <span class="text-3xl drop-shadow-[0_6px_12px_rgba(74,222,128,0.4)]">🛒</span>
+              <div class="space-y-1">
+                <h3 class="font-heading text-lg text-emerald-100">Einkaufen</h3>
+                <p class="text-sm text-slate-200/75">Organisiere deine Einkaufslisten, damit nichts mehr fehlt.</p>
+              </div>
+            </RouterLink>
           </li>
         </ol>
       </section>
