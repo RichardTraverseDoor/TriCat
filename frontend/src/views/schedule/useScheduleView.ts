@@ -1,4 +1,5 @@
-import { computed, reactive } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { createScheduleEntry, deleteScheduleEntry, fetchScheduleEntries } from '@/services/scheduleApi';
 import {
   scheduleDayEmojis,
   scheduleDayLabels,
@@ -8,10 +9,6 @@ import {
   type ScheduleEntry,
   type ScheduleTimeSlot,
 } from '@/types/schedule';
-
-interface ScheduleState {
-  entries: ScheduleEntry[];
-}
 
 const toMinutes = (time: string) => {
   const [hours, minutes] = time.split(':').map((value) => Number.parseInt(value, 10));
@@ -42,46 +39,23 @@ const generateTimeSlots = (start: string, end: string, stepMinutes: number): Sch
 
 const initialTimeSlots: ScheduleTimeSlot[] = generateTimeSlots('08:00', '20:00', 15);
 
-let entryCounter = 1;
+const entriesState = ref<ScheduleEntry[]>([]);
 
-const createEntry = (payload: CreateScheduleEntryPayload): ScheduleEntry => ({
-  id: `schedule-entry-${entryCounter++}`,
-  ...payload,
-});
+const loadEntries = async () => {
+  try {
+    const entries = await fetchScheduleEntries();
+    entriesState.value = entries;
+  } catch (error) {
+    console.error('Fehler beim Laden der Stundenplaneinträge', error);
+  }
+};
 
-const initialEntries: ScheduleEntry[] = [
-  createEntry({
-    title: 'Mathematische Schnurranalyse',
-    type: 'lecture',
-    day: 'monday',
-    startTime: '09:15',
-    endTime: '10:45',
-    room: 'A2 Schnurrsaal',
-  }),
-  createEntry({
-    title: 'Programmier-Übung: Flauschige Funktionen',
-    type: 'exercise',
-    day: 'wednesday',
-    startTime: '10:00',
-    endTime: '12:00',
-    room: 'Lab 3 – Katzenkralle',
-  }),
-  createEntry({
-    title: 'Labor: Sensorik für Katzenklappen',
-    type: 'lab',
-    day: 'friday',
-    startTime: '14:00',
-    endTime: '16:00',
-    room: 'Labor Miauz 1',
-  }),
-];
-
-const state = reactive<ScheduleState>({
-  entries: initialEntries,
+onMounted(() => {
+  void loadEntries();
 });
 
 const entries = computed(() =>
-  state.entries
+  entriesState.value
     .slice()
     .sort((a, b) => {
       const dayComparison = scheduleDayOrder.indexOf(a.day) - scheduleDayOrder.indexOf(b.day);
@@ -122,14 +96,21 @@ const busiestDay = computed(() => {
   return currentDay;
 });
 
-const addEntry = (payload: CreateScheduleEntryPayload) => {
-  state.entries.push(createEntry(payload));
+const addEntry = async (payload: CreateScheduleEntryPayload) => {
+  try {
+    const entry = await createScheduleEntry(payload);
+    entriesState.value = [...entriesState.value, entry];
+  } catch (error) {
+    console.error('Fehler beim Anlegen eines Stundenplaneintrags', error);
+  }
 };
 
-const removeEntry = (id: string) => {
-  const index = state.entries.findIndex((entry) => entry.id === id);
-  if (index !== -1) {
-    state.entries.splice(index, 1);
+const removeEntry = async (id: number) => {
+  try {
+    await deleteScheduleEntry(id);
+    entriesState.value = entriesState.value.filter((entry) => entry.id !== id);
+  } catch (error) {
+    console.error('Fehler beim Löschen eines Stundenplaneintrags', error);
   }
 };
 

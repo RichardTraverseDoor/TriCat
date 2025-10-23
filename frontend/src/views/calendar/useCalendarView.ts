@@ -1,4 +1,5 @@
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { createCalendarEvent, deleteCalendarEvent, fetchCalendarEvents } from '@/services/calendarApi'
 import type {
   CalendarDay,
   CalendarWeekday,
@@ -60,15 +61,19 @@ export function useCalendarView() {
   const today = new Date();
   const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-  const initialEvents: StoredEvent[] = [
-    { id: 1, title: 'Mathe-Klausur', date: formatISODate(addDays(today, 2)) },
-    { id: 2, title: 'Lernsnack mit Mieze', date: formatISODate(addDays(today, 5)) },
-    { id: 3, title: 'Projektabgabe', date: formatISODate(addDays(today, 9)) },
-    { id: 4, title: 'Katzenkaffee mit Study-Buddys', date: formatISODate(addDays(today, 14)) }
-  ];
+  const events = ref<StoredEvent[]>([]);
+  const loadEvents = async () => {
+    try {
+      const result = await fetchCalendarEvents();
+      events.value = result;
+    } catch (error) {
+      console.error('Fehler beim Laden der Kalenderereignisse', error);
+    }
+  };
 
-  const events = ref<StoredEvent[]>(initialEvents);
-  let nextEventId = initialEvents.length + 1;
+  onMounted(() => {
+    void loadEvents();
+  });
 
   const currentMonth = ref(new Date(today.getFullYear(), today.getMonth(), 1));
   const selectedDate = ref<Date | null>(null);
@@ -222,23 +227,30 @@ export function useCalendarView() {
     newEventTitle.value = '';
   };
 
-  const addEvent = () => {
+  const addEvent = async () => {
     if (!selectedDate.value) return;
     const trimmed = newEventTitle.value.trim();
     if (!trimmed) return;
 
-    const newEvent: StoredEvent = {
-      id: nextEventId++,
-      title: trimmed,
-      date: formatISODate(selectedDate.value)
-    };
-
-    events.value = [...events.value, newEvent];
-    closeForm();
+    try {
+      const newEvent = await createCalendarEvent({
+        title: trimmed,
+        date: formatISODate(selectedDate.value),
+      });
+      events.value = [...events.value, newEvent];
+      closeForm();
+    } catch (error) {
+      console.error('Fehler beim Erstellen eines Kalenderereignisses', error);
+    }
   };
 
-  const deleteEvent = (eventId: number) => {
-    events.value = events.value.filter((event) => event.id !== eventId);
+  const deleteEvent = async (eventId: number) => {
+    try {
+      await deleteCalendarEvent(eventId);
+      events.value = events.value.filter((event) => event.id !== eventId);
+    } catch (error) {
+      console.error('Fehler beim Löschen eines Kalenderereignisses', error);
+    }
   };
 
   return {

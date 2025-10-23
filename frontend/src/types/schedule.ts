@@ -53,7 +53,7 @@ export const scheduleEntryTypeMeta: Record<ScheduleEntryType, ScheduleEntryTypeM
 };
 
 export interface ScheduleEntry {
-  id: string;
+  id: number;
   title: string;
   type: ScheduleEntryType;
   day: ScheduleDay;
