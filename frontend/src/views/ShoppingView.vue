@@ -31,7 +31,21 @@
       </div>
     </header>
 
-    <div class="grid gap-6 lg:grid-cols-[20rem,1fr]">
+    <div
+      v-if="errorMessage"
+      class="rounded-3xl border border-rose-400/40 bg-rose-500/10 px-6 py-4 text-sm text-rose-100"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <div
+      v-if="isLoading"
+      class="rounded-3xl border border-dashed border-emerald-400/40 bg-slate-950/50 p-10 text-center text-sm text-emerald-100/70"
+    >
+      Lade schnurrende Einkaufslisten...
+    </div>
+
+    <div v-else class="grid gap-6 lg:grid-cols-[20rem,1fr]">
       <ShoppingListSelector
         :lists="lists"
         :active-list-id="activeListId"
@@ -66,14 +80,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { ListChecks, UtensilsCrossed } from 'lucide-vue-next';
 
 import ShoppingListDetail from '@/components/shopping/ShoppingListDetail.vue';
 import ShoppingListSelector from '@/components/shopping/ShoppingListSelector.vue';
-import type { Dish, Ingredient, ShoppingList } from '@/types/shopping';
-
-const createId = () => Math.random().toString(36).slice(2, 11);
+import type { ShoppingList } from '@/types/shopping';
+import {
+  createDish,
+  createIngredient,
+  createShoppingList,
+  deleteDish,
+  deleteIngredient,
+  deleteShoppingList,
+  fetchShoppingLists,
+  toggleIngredient as toggleIngredientRemote,
+  updateShoppingList
+} from '@/services/shoppingApi';
 
 const moodSnippets = [
   'Frisch geschnurrt und bereit zum Naschen',
@@ -83,53 +106,10 @@ const moodSnippets = [
   'Kuscheliger Vorrat für Regentage'
 ];
 
-const lists = ref<ShoppingList[]>([
-  {
-    id: createId(),
-    name: 'Wochenmarkt-Miaus',
-    mood: 'Frische Schnurr-Gerichte für die ganze Woche',
-    createdAt: new Date().toISOString(),
-    dishes: [
-      {
-        id: createId(),
-        name: 'Samtpfoten-Lachs mit Kräutern',
-        ingredients: [
-          { id: createId(), name: 'Lachsfilet', purchased: false },
-          { id: createId(), name: 'Zitronenthymian', purchased: false },
-          { id: createId(), name: 'Katzengerechte Sahne', purchased: true }
-        ]
-      },
-      {
-        id: createId(),
-        name: 'Mondschein-Gemüsepfanne',
-        ingredients: [
-          { id: createId(), name: 'Süßkartoffel', purchased: false },
-          { id: createId(), name: 'Zuckerschoten', purchased: false },
-          { id: createId(), name: 'Sesamöl', purchased: false }
-        ]
-      }
-    ]
-  },
-  {
-    id: createId(),
-    name: 'Picknick im Katzenpark',
-    mood: 'Leichte Snacks für sonnige Kuschelstunden',
-    createdAt: new Date().toISOString(),
-    dishes: [
-      {
-        id: createId(),
-        name: 'Frühlingshafte Thunfisch-Taschen',
-        ingredients: [
-          { id: createId(), name: 'Blätterteig', purchased: false },
-          { id: createId(), name: 'Thunfisch in Wasser', purchased: true },
-          { id: createId(), name: 'Frischer Dill', purchased: false }
-        ]
-      }
-    ]
-  }
-]);
-
-const activeListId = ref(lists.value[0]?.id ?? null);
+const lists = ref<ShoppingList[]>([]);
+const activeListId = ref<number | null>(null);
+const isLoading = ref(false);
+const errorMessage = ref<string | null>(null);
 
 const activeList = computed(() => lists.value.find((list) => list.id === activeListId.value) ?? null);
 
@@ -147,70 +127,114 @@ const openIngredients = computed(() =>
 
 const formattedCreatedAt = computed(() => {
   if (!activeList.value) return '';
+  if (!activeList.value.createdAt) {
+    return 'gerade eben';
+  }
   const date = new Date(activeList.value.createdAt);
   return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'long', year: 'numeric' }).format(date);
 });
 
-const selectList = (id: string) => {
-  activeListId.value = id;
+const handleError = (error: unknown) => {
+  console.error(error);
+  errorMessage.value = error instanceof Error ? error.message : 'Es ist ein unbekannter Fehler aufgetreten.';
 };
 
-const createList = () => {
-  const newList: ShoppingList = {
-    id: createId(),
-    name: `Neue Miau-Liste ${lists.value.length + 1}`,
-    mood: moodSnippets[Math.floor(Math.random() * moodSnippets.length)],
-    createdAt: new Date().toISOString(),
-    dishes: []
-  };
+const enhanceList = (list: ShoppingList, fallbackCreatedAt?: string): ShoppingList => ({
+  ...list,
+  createdAt: list.createdAt ?? fallbackCreatedAt,
+  dishes: list.dishes.map((dish) => ({
+    ...dish,
+    ingredients: dish.ingredients.map((ingredient) => ({ ...ingredient }))
+  }))
+});
 
-  lists.value.unshift(newList);
-  activeListId.value = newList.id;
-};
-
-const renameList = ({ id, name }: { id: string; name: string }) => {
-  const list = lists.value.find((entry) => entry.id === id);
-  if (list) {
-    list.name = name;
+const loadLists = async () => {
+  isLoading.value = true;
+  errorMessage.value = null;
+  try {
+    const remoteLists = await fetchShoppingLists();
+    const now = new Date().toISOString();
+    lists.value = remoteLists.map((entry) => enhanceList(entry, now));
+    activeListId.value = lists.value[0]?.id ?? null;
+  } catch (error) {
+    handleError(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-const addDish = ({ listId, name }: { listId: string; name: string }) => {
-  const list = lists.value.find((entry) => entry.id === listId);
-  if (!list) return;
+onMounted(() => {
+  loadLists();
+});
 
-  const dish: Dish = {
-    id: createId(),
-    name,
-    ingredients: []
-  };
-
-  list.dishes.push(dish);
+const selectList = (id: number) => {
+  activeListId.value = id;
 };
 
-const addIngredient = ({ listId, dishId, name }: { listId: string; dishId: string; name: string }) => {
+const createList = async () => {
+  const name = `Neue Miau-Liste ${lists.value.length + 1}`;
+  const mood = moodSnippets[Math.floor(Math.random() * moodSnippets.length)];
+  errorMessage.value = null;
+  try {
+    const created = await createShoppingList({ name, mood });
+    const enhanced = enhanceList(created, new Date().toISOString());
+    lists.value.unshift(enhanced);
+    activeListId.value = enhanced.id;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+const renameList = async ({ id, name }: { id: number; name: string }) => {
+  const list = lists.value.find((entry) => entry.id === id);
+  if (!list) return;
+  const previousName = list.name;
+  list.name = name;
+  errorMessage.value = null;
+  try {
+    const updated = await updateShoppingList(id, { name });
+    list.name = updated.name;
+    list.mood = updated.mood;
+  } catch (error) {
+    list.name = previousName;
+    handleError(error);
+  }
+};
+
+const addDish = async ({ listId, name }: { listId: number; name: string }) => {
+  const list = lists.value.find((entry) => entry.id === listId);
+  if (!list) return;
+  errorMessage.value = null;
+  try {
+    const dish = await createDish(listId, { name });
+    list.dishes.push({ ...dish, ingredients: [...dish.ingredients] });
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+const addIngredient = async ({ listId, dishId, name }: { listId: number; dishId: number; name: string }) => {
   const list = lists.value.find((entry) => entry.id === listId);
   if (!list) return;
   const dish = list.dishes.find((entry) => entry.id === dishId);
   if (!dish) return;
-
-  const ingredient: Ingredient = {
-    id: createId(),
-    name,
-    purchased: false
-  };
-
-  dish.ingredients.push(ingredient);
+  errorMessage.value = null;
+  try {
+    const ingredient = await createIngredient(listId, dishId, { name });
+    dish.ingredients.push({ ...ingredient });
+  } catch (error) {
+    handleError(error);
+  }
 };
 
-const toggleIngredient = ({
+const toggleIngredient = async ({
   listId,
   dishId,
   ingredientId
 }: {
-  listId: string;
-  dishId: string;
-  ingredientId: string;
+  listId: number;
+  dishId: number;
+  ingredientId: number;
 }) => {
   const list = lists.value.find((entry) => entry.id === listId);
   if (!list) return;
@@ -219,41 +243,62 @@ const toggleIngredient = ({
   const ingredient = dish.ingredients.find((entry) => entry.id === ingredientId);
   if (!ingredient) return;
 
-  ingredient.purchased = !ingredient.purchased;
+  const previousState = ingredient.purchased;
+  ingredient.purchased = !previousState;
+  errorMessage.value = null;
+  try {
+    const updated = await toggleIngredientRemote(listId, dishId, ingredientId);
+    ingredient.purchased = updated.purchased;
+  } catch (error) {
+    ingredient.purchased = previousState;
+    handleError(error);
+  }
 };
 
-const removeIngredient = ({
+const removeIngredient = async ({
   listId,
   dishId,
   ingredientId
 }: {
-  listId: string;
-  dishId: string;
-  ingredientId: string;
+  listId: number;
+  dishId: number;
+  ingredientId: number;
 }) => {
   const list = lists.value.find((entry) => entry.id === listId);
   if (!list) return;
   const dish = list.dishes.find((entry) => entry.id === dishId);
   if (!dish) return;
-
-  dish.ingredients = dish.ingredients.filter((entry) => entry.id !== ingredientId);
+  errorMessage.value = null;
+  try {
+    await deleteIngredient(listId, dishId, ingredientId);
+    dish.ingredients = dish.ingredients.filter((entry) => entry.id !== ingredientId);
+  } catch (error) {
+    handleError(error);
+  }
 };
 
-const removeDish = ({ listId, dishId }: { listId: string; dishId: string }) => {
+const removeDish = async ({ listId, dishId }: { listId: number; dishId: number }) => {
   const list = lists.value.find((entry) => entry.id === listId);
   if (!list) return;
-
-  list.dishes = list.dishes.filter((entry) => entry.id !== dishId);
+  errorMessage.value = null;
+  try {
+    await deleteDish(listId, dishId);
+    list.dishes = list.dishes.filter((entry) => entry.id !== dishId);
+  } catch (error) {
+    handleError(error);
+  }
 };
 
-const removeList = (id: string) => {
-  const index = lists.value.findIndex((entry) => entry.id === id);
-  if (index === -1) return;
-
-  lists.value.splice(index, 1);
-
-  if (activeListId.value === id) {
-    activeListId.value = lists.value[0]?.id ?? null;
+const removeList = async (id: number) => {
+  errorMessage.value = null;
+  try {
+    await deleteShoppingList(id);
+    lists.value = lists.value.filter((entry) => entry.id !== id);
+    if (activeListId.value === id) {
+      activeListId.value = lists.value[0]?.id ?? null;
+    }
+  } catch (error) {
+    handleError(error);
   }
 };
 </script>
