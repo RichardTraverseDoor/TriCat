@@ -66,7 +66,7 @@ const course = computed(() => props.course);
 const emit = defineEmits<{
   'update-course': [payload: {
     type: 'update';
-    courseId: string;
+    courseId: number;
     field: 'name' | 'ects' | 'grade';
     value: string;
   }];

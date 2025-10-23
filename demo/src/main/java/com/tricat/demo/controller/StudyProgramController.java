@@ -40,6 +40,12 @@ public class StudyProgramController {
     public StudyProgramEntity createProgram(@RequestBody StudyProgramEntity program) {
         return studyRepo.save(program);
     }
+    @PutMapping("/{id}")
+    public StudyProgramEntity updateProgram(@PathVariable Long id, @RequestBody StudyProgramEntity updated) {
+        StudyProgramEntity program = studyRepo.findById(id).orElseThrow();
+        program.setName(updated.getName());
+        return studyRepo.save(program);
+    }
 
     @DeleteMapping("/{id}")
     public void deleteProgram(@PathVariable Long id) {
@@ -58,6 +64,14 @@ public class StudyProgramController {
     public void deleteSemester(@PathVariable Long semesterId) {
         semesterRepo.deleteById(semesterId);
     }
+
+    @PutMapping("/semesters/{semesterId}")
+    public SemesterEntity updateSemester(@PathVariable Long semesterId, @RequestBody SemesterEntity updated) {
+        SemesterEntity semester = semesterRepo.findById(semesterId).orElseThrow();
+        semester.setTitle(updated.getTitle());
+        return semesterRepo.save(semester);
+    }
+
 
     // --- COURSES ---
     @PostMapping("/semesters/{semesterId}/courses")

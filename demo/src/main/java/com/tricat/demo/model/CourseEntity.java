@@ -1,6 +1,8 @@
 package com.tricat.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+
 
 @Entity
 public class CourseEntity {
@@ -15,6 +17,7 @@ public class CourseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "semester_id")
+    @JsonBackReference
     private SemesterEntity semester;
 
     public CourseEntity() {}

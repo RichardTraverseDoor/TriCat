@@ -40,17 +40,17 @@ defineProps<{
 
 const emit = defineEmits<{
   'add-semester': [];
-  'remove-semester': [id: string];
-  'update-semester-title': [payload: { id: string; title: string }];
+  'remove-semester': [id: number];
+  'update-semester-title': [payload: { id: number; title: string }];
   'update-semester-courses': [
     payload: {
-      id: string;
+      id: number;
       action:
         | { type: 'add' }
-        | { type: 'remove'; id: string }
+        | { type: 'remove'; id: number }
         | {
             type: 'update';
-            courseId: string;
+            courseId: number;
             field: 'name' | 'ects' | 'grade';
             value: string;
           };
