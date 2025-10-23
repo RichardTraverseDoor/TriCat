@@ -143,7 +143,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  remove: [id: string];
+  remove: [id: number];
   inspect: [entry: ScheduleEntry];
 }>();
 
