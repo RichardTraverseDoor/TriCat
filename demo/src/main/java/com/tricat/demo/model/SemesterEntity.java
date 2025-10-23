@@ -1,5 +1,7 @@
 package com.tricat.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +17,11 @@ public class SemesterEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_program_id")
+    @JsonBackReference
     private StudyProgramEntity studyProgram;
 
     @OneToMany(mappedBy = "semester", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<CourseEntity> courses = new ArrayList<>();
 
     public SemesterEntity() {}

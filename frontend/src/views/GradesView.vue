@@ -14,149 +14,46 @@
       @cancel="closeProgramCreator"
     />
 
+    <div
+      v-if="loading"
+      class="rounded-3xl border border-emerald-300/20 bg-slate-900/40 p-6 text-center text-sm text-emerald-200/80"
+    >
+      Lade deine Studienübersicht ...
+    </div>
+
     <SemesterBoard
+      v-else
       :semesters="semesters"
       @add-semester="addSemester"
       @remove-semester="removeSemester"
       @update-semester-title="updateSemesterTitle"
-      @update-semester-courses="updateSemesterCourses"
+      @update-semester-courses="({ id, action }) => updateSemesterCourses(id, action)"
     />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
 import ProgramOverview from '../components/grades/ProgramOverview.vue';
 import ProgramCreator from '../components/grades/ProgramCreator.vue';
 import SemesterBoard from '../components/grades/SemesterBoard.vue';
-import type { Course, Semester } from '../types/grades';
-import { computeTotalEcts, computeWeightedAverage } from '../types/grades';
+import { useGradesView } from './grades/useGradesView';
 
-interface GradeState {
-  programName: string;
-  semesters: Semester[];
-}
-
-let semesterCounter = 1;
-let courseCounter = 1;
-
-const createSemester = (title?: string): Semester => ({
-  id: `semester-${semesterCounter++}`,
-  title: title ?? `Semester ${semesterCounter - 1}`,
-  courses: [],
-});
-
-const createCourse = (): Course => ({
-  id: `course-${courseCounter++}`,
-  name: '',
-  ects: null,
-  grade: null,
-});
-
-const state = reactive<GradeState>({
-  programName: 'Schnurr-Informatik B.Sc.',
-  semesters: [createSemester('Semester 1')],
-});
-
-const showProgramCreator = ref(false);
-const programDraft = ref(state.programName);
-
-const programName = computed(() => state.programName);
-const semesters = computed(() => state.semesters);
-
-const totalProgramEcts = computed(() =>
-  state.semesters.reduce((total, semester) => total + computeTotalEcts(semester.courses), 0),
-);
-
-const programAverage = computed(() => {
-  const courses = state.semesters.flatMap((semester) => semester.courses);
-  return computeWeightedAverage(courses);
-});
-
-const openProgramCreator = () => {
-  programDraft.value = state.programName;
-  showProgramCreator.value = true;
-};
-
-const closeProgramCreator = () => {
-  programDraft.value = state.programName;
-  showProgramCreator.value = false;
-};
-
-const saveProgram = () => {
-  if (!programDraft.value.trim()) {
-    return;
-  }
-  state.programName = programDraft.value.trim();
-  showProgramCreator.value = false;
-};
-
-const addSemester = () => {
-  const nextIndex = state.semesters.length + 1;
-  state.semesters.push(createSemester(`Semester ${nextIndex}`));
-};
-
-const removeSemester = (id: string) => {
-  const index = state.semesters.findIndex((semester) => semester.id === id);
-  if (index !== -1) {
-    state.semesters.splice(index, 1);
-  }
-};
-
-const updateSemesterTitle = ({ id, title }: { id: string; title: string }) => {
-  const semester = state.semesters.find((item) => item.id === id);
-  if (semester) {
-    semester.title = title;
-  }
-};
-
-const updateSemesterCourses = ({
-  id,
-  action,
-}: {
-  id: string;
-  action:
-    | { type: 'add' }
-    | { type: 'remove'; id: string }
-    | { type: 'update'; courseId: string; field: 'name' | 'ects' | 'grade'; value: string };
-}) => {
-  const semester = state.semesters.find((item) => item.id === id);
-  if (!semester) {
-    return;
-  }
-
-  if (action.type === 'add') {
-    semester.courses.push(createCourse());
-    return;
-  }
-
-  if (action.type === 'remove') {
-    const index = semester.courses.findIndex((course) => course.id === action.id);
-    if (index !== -1) {
-      semester.courses.splice(index, 1);
-    }
-    return;
-  }
-
-  if (action.type === 'update') {
-    const course = semester.courses.find((item) => item.id === action.courseId);
-    if (!course) {
-      return;
-    }
-
-    if (action.field === 'name') {
-      course.name = action.value;
-      return;
-    }
-
-    const numericValue = action.value === '' ? null : Number.parseFloat(action.value);
-    if (action.field === 'ects') {
-      course.ects = Number.isFinite(numericValue ?? NaN) ? numericValue : null;
-    } else if (action.field === 'grade') {
-      course.grade = Number.isFinite(numericValue ?? NaN) ? numericValue : null;
-    }
-  }
-};
+const {
+  loading,
+  programName,
+  semesters,
+  totalProgramEcts,
+  programAverage,
+  showProgramCreator,
+  programDraft,
+  openProgramCreator,
+  closeProgramCreator,
+  saveProgram,
+  addSemester,
+  removeSemester,
+  updateSemesterTitle,
+  updateSemesterCourses,
+} = useGradesView();
 </script>
 
 <style scoped>
